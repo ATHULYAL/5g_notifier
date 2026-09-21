@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.a5gnotifier"
         minSdk = 31
-        targetSdk = 37
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 

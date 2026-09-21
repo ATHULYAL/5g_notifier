@@ -19,11 +19,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Start the background service
-        val intent = Intent(this, NetworkMonitorService::class.java)
-        startForegroundService(intent)
+
 
         enableEdgeToEdge()
+
+        val serviceIntent = Intent(this, NetworkMonitorService::class.java)
+        startForegroundService(serviceIntent)
 
         setContent {
             _5GNotifierTheme {

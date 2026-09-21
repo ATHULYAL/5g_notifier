@@ -1,4 +1,4 @@
-package com.example.a5gnotifier   // <-- Replace with YOUR package
+package com.example.a5gnotifier
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,21 +11,41 @@ import android.os.IBinder
 class NetworkMonitorService : Service() {
 
     companion object {
-        private const val CHANNEL_ID = "NetworkMonitorChannel"
+        private const val CHANNEL_ID = "network_monitor_channel"
+        private const val NOTIFICATION_ID = 1
     }
+
+    private lateinit var networkMonitor: NetworkMonitor
+    private lateinit var notificationManager: NotificationManager
 
     override fun onCreate() {
         super.onCreate()
 
+        notificationManager =
+            getSystemService(NotificationManager::class.java)
+
         createNotificationChannel()
+
+        // Initial notification
+        updateNotification("Detecting...")
+
+        // Start monitoring network
+        networkMonitor = NetworkMonitor(this) { network ->
+            updateNotification(network)
+        }
+
+        networkMonitor.start()
+    }
+
+    private fun updateNotification(network: String) {
 
         val notification = Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("5G Notifier")
-            .setContentText("Monitoring network changes...")
+            .setContentText("📶 Current Network: $network")
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .build()
 
-        startForeground(1, notification)
+        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     override fun onStartCommand(
@@ -33,13 +53,15 @@ class NetworkMonitorService : Service() {
         flags: Int,
         startId: Int
     ): Int {
-
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    override fun onDestroy() {
+        networkMonitor.stop()
+        super.onDestroy()
     }
+
+    override fun onBind(intent: Intent?): IBinder? = null
 
     private fun createNotificationChannel() {
 
@@ -51,10 +73,7 @@ class NetworkMonitorService : Service() {
                 NotificationManager.IMPORTANCE_LOW
             )
 
-            val manager =
-                getSystemService(NotificationManager::class.java)
-
-            manager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }
